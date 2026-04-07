@@ -4,7 +4,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppI
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
 # ========== НАСТРОЙКИ ==========
-BOT_TOKEN = "ВАШ_ТОКЕН_БОТА"  # Замените на токен от @BotFather
+BOT_TOKEN = "7891647573:AAFRH9ViaiBrplNwLZ6bY9nDAWNdCeaEfAw"  # Замените на токен от @BotFather
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
 # ========== HTML-ИГРА (ПОЛНОСТЬЮ ВСТРОЕНА) ==========
