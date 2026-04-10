@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ЭПШТЕЙН · ВСЕ 8 ПЕРСОНАЖЕЙ</title>
+    <style>
+        * { user-select: none; -webkit-tap-highlight-color: transparent; }
+        body {
+            background: linear-gradient(145deg, #0a0f1a 0%, #03060c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', 'VT323', monospace;
+            margin: 0;
+            padding: 16px;
+        }
+        .game-container {
+            background: #1a1f2a;
+            border-radius: 64px;
+            max-width: 550px;
+            width: 100%;
+            padding: 20px;
+            border: 2px solid #7a6a3a;
+            text-align: center;
+        }
+        .character-select h2 { color: #ffd966; margin-bottom: 20px; font-size: 1.8rem; }
+        .characters { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; max-height: 60vh; overflow-y: auto; }
+        .char-btn {
+            background: #2a2f3a;
+            border: 2px solid #ffd966;
+            border-radius: 60px;
+            padding: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            font-family: monospace;
+            color: #ffefc0;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .char-btn:active { transform: scale(0.98); background: #3a4050; }
+        .char-emoji { font-size: 1.8rem; }
+        .char-stats { font-size: 0.6rem; color: #aabbcc; margin-top: 2px; }
+        .top-panel { display: flex; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+        .lives { background: #0c0f0b; border-radius: 60px; padding: 6px 12px; color: #ff5555; font-weight: bold; flex: 1; font-size: 1.2rem; }
+        .coins { background: #2c2b1f; border-radius: 60px; padding: 6px 12px; color: #ffd966; font-weight: bold; flex: 1; font-size: 1.2rem; }
+        .score-box { background: #2c2b1f; border-radius: 40px; padding: 6px 12px; margin-bottom: 16px; display: inline-block; }
+        .event-log { background: #0a0f05e0; border-radius: 32px; padding: 12px; min-height: 110px; margin: 14px 0; color: #e2ffd6; font-size: 0.8rem; }
+        .eat-btn { background: radial-gradient(circle at 30% 10%, #b34e2e, #5a1e0c); border: none; font-size: 1.6rem; padding: 14px; width: 85%; border-radius: 100px; color: #ffefc0; cursor: pointer; margin-bottom: 14px; }
+        .eat-btn:active { transform: translateY(4px); }
+        .shop { background: #2a2a1a; border-radius: 32px; padding: 10px; margin: 12px 0; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .shop-btn { background: #3a3a2a; border: none; padding: 8px 10px; border-radius: 40px; color: #ffefc0; cursor: pointer; font-size: 0.7rem; }
+        .reset-btn, .restart-btn { background: #2a2a2a; border: none; padding: 8px 16px; border-radius: 40px; color: #dddddd; width: 70%; cursor: pointer; margin-top: 6px; font-size: 1rem; }
+        .mini-game {
+            background: #2a2f3a;
+            border-radius: 40px;
+            padding: 12px;
+            margin-top: 16px;
+        }
+        .mini-game input { padding: 8px; border-radius: 30px; border: none; text-align: center; font-size: 1rem; width: 60px; }
+        .fat-level { font-size: 0.7rem; background: #553300; border-radius: 20px; padding: 2px 8px; display: inline-block; margin-top: 5px; }
+        .mayonnaise-badge { background: #ffcc44; color: #553300; border-radius: 30px; padding: 4px 10px; font-size: 0.7rem; font-weight: bold; margin-top: 8px; display: inline-block; }
+        .hidden { display: none; }
+        button:disabled { opacity: 0.5; }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div id="characterSelect" class="character-select">
+        <h2>🍆 ВЫБЕРИ ПЕРСОНАЖА 🍆</h2>
+        <div class="characters">
+            <div class="char-btn" data-char="gaben"><span class="char-emoji">🎮👨</span><div><strong>ГАБЕН</strong><div class="char-stats">❤️2 макс | 🪙2 макс | монеты только при атаке | призыв матери (+40 детей)</div></div></div>
+            <div class="char-btn" data-char="gabenMother"><span class="char-emoji">🐷👩</span><div><strong>МАТЬ ГАБЕНА</strong><div class="char-stats">❤️2 старт | каждые 5 ходов +3 детей | защита жиром 60%+</div></div></div>
+            <div class="char-btn" data-char="biden"><span class="char-emoji">🇺🇸👴</span><div><strong>ДЖО БАЙДЕН</strong><div class="char-stats">❤️5 | 20% забывает монетки | 10% падает с лестницы</div></div></div>
+            <div class="char-btn" data-char="trump"><span class="char-emoji">🇺🇸🍊</span><div><strong>ДОНАЛЬД ТРАМП</strong><div class="char-stats">❤️3 | 30% скидка в магазине</div></div></div>
+            <div class="char-btn" data-char="epstein"><span class="char-emoji">🏝️👔</span><div><strong>ЭПШТЕЙН</strong><div class="char-stats">❤️3 | приглашение +3хп | 50% выжить после Зеленского</div></div></div>
+            <div class="char-btn" data-char="musk"><span class="char-emoji">🚀🧠</span><div><strong>ИЛОН МАСК</strong><div class="char-stats">❤️10 | 30🪙 старт | 80% скидка | 100 жизней за 200.000🪙</div></div></div>
+            <div class="char-btn" data-char="bandera"><span class="char-emoji">🇺🇦⚔️</span><div><strong>СТЕПАН БАНДЕРА</strong><div class="char-stats">❤️2 | +200% монеток | призыв Зеленского за 200🪙</div></div></div>
+            <div class="char-btn" data-char="kuplinov"><span class="char-emoji">🍯🍔</span><div><strong>КУПЛИНОВ</strong><div class="char-stats">❤️4 | майонез (2% после урона, 10 ходов неуязвимости)</div></div></div>
+        </div>
+    </div>
+
+    <div id="gameArea" class="hidden">
+        <div class="top-panel"><div class="lives" id="livesDisplay">❤️❤️❤️</div><div class="coins">🪙 <span id="coinsValue">0</span></div></div>
+        <div class="score-box">🍼 ДЕТЕЙ СЪЕДЕНО: <span id="scoreValue">0</span></div>
+        <div id="fatLevelDisplay" class="fat-level hidden"></div>
+        <div id="mayonnaiseStatus" class="mayonnaise-badge hidden"></div>
+        <div class="event-log"><div class="event-text" id="eventMessage"></div></div>
+        <button class="eat-btn" id="eatButton">🍖 ЕСТЬ ДЕТЕЙ 🍖</button>
+        <div class="shop" id="shopContainer"></div>
+        <div id="specialButtonsContainer"></div>
+        
+        <div class="mini-game">
+            <div style="font-size:1rem; margin-bottom:8px;">🎲 УГАДАЙ ЧИСЛО (1-10) 🎲</div>
+            <input type="number" id="guessInput" min="1" max="10" placeholder="1-10">
+            <button id="guessBtn" class="shop-btn" style="margin-top:5px;">УГАДАТЬ</button>
+            <div id="miniGameResult" style="font-size:0.7rem; margin-top:5px;"></div>
+            <div style="font-size:0.6rem; margin-top:5px;">💰 Выигрыш: +10 детей, +5🪙</div>
+        </div>
+        
+        <button class="restart-btn" id="restartButton">🔄 ИГРАТЬ СНОВА (РЕСТАРТ)</button>
+        <button class="reset-btn" id="resetButton">🔄 ВЫБРАТЬ ДРУГОГО ПЕРСОНАЖА</button>
+        <div class="footer">💰 +5(никого) | +3(добавили жизнь) | +1(отняли жизнь)</div>
+    </div>
+</div>
+
+<script>
+    // ========== ВСЕ 8 ПЕРСОНАЖЕЙ ==========
+    const characters = {
+        gaben: { name:"Габен", startLives:2, maxLives:2, startCoins:0, maxCoins:2, coinMultiplier:1, shopDiscount:0, surviveZelenskyChance:0,
+                 special: { gainCoinsOnlyOnDamage:true, canSummonMother:true, motherSummonCost:2, motherGain:40 } },
+        gabenMother: { name:"Мать Габена", startLives:2, startCoins:0, coinMultiplier:1, shopDiscount:0, surviveZelenskyChance:0.6,
+                       special: { everyXTurns:5, eatChildrenAmount:3, fatLevel:0, fatPrice:10, fatChance:0.6 } },
+        biden: { name:"Джо Байден", startLives:5, startCoins:0, coinMultiplier:1, shopDiscount:0, surviveZelenskyChance:0,
+                 special: { forgetChance:0.2, fallChance:0.1, fallZero:0.03, fallOne:0.07, fallTwo:0.01 } },
+        trump: { name:"Дональд Трамп", startLives:3, startCoins:0, coinMultiplier:1, shopDiscount:0.3, surviveZelenskyChance:0 },
+        epstein: { name:"Эпштейн", startLives:3, startCoins:0, coinMultiplier:1, shopDiscount:0, surviveZelenskyChance:0.5 },
+        musk: { name:"Илон Маск", startLives:10, startCoins:30, coinMultiplier:1, shopDiscount:0.8, surviveZelenskyChance:0,
+                special: { canBuy100:true } },
+        bandera: { name:"Степан Бандера", startLives:2, startCoins:0, coinMultiplier:3, shopDiscount:0, surviveZelenskyChance:1.0,
+                   special: { noNormalShop:true, canSummonZelensky:true } },
+        kuplinov: { name:"Куплинов", startLives:4, startCoins:0, coinMultiplier:1, shopDiscount:0, surviveZelenskyChance:0,
+                    special: { mayonnaiseChance:0.02, mayonnaiseTurns:10, mayonnaisePrice:50 } }
+    };
+
+    let currentChar = null, charId = null;
+    let lives = 3, score = 0, coins = 0, gameActive = true;
+    let turnCounter = 0;
+    let mayonnaiseTurnsLeft = 0;
+    let motherFatLevel = 0;
+    let muskAskShown = false;
+
+    const charSelectDiv = document.getElementById('characterSelect');
+    const gameDiv = document.getElementById('gameArea');
+    const livesSpan = document.getElementById('livesDisplay');
+    const scoreSpan = document.getElementById('scoreValue');
+    const coinsSpan = document.getElementById('coinsValue');
+    const eventDiv = document.getElementById('eventMessage');
+    const eatBtn = document.getElementById('eatButton');
+    const resetBtn = document.getElementById('resetButton');
+    const restartBtn = document.getElementById('restartButton');
+    const shopContainer = document.getElementById('shopContainer');
+    const specialContainer = document.getElementById('specialButtonsContainer');
+    const fatLevelDisplay = document.getElementById('fatLevelDisplay');
+    const mayonnaiseStatusDiv = document.getElementById('mayonnaiseStatus');
+    const guessInput = document.getElementById('guessInput');
+    const guessBtn = document.getElementById('guessBtn');
+    const miniGameResult = document.getElementById('miniGameResult');
+
+    function updateUI() {
+        let hearts = ''; for(let i=0;i<lives;i++) hearts+='❤️ ';
+        if(lives<=0) hearts='💀 МЕРТВ 💀';
+        livesSpan.innerText = hearts.trim() || '💀';
+        scoreSpan.innerText = score;
+        let maxCoins = currentChar?.maxCoins;
+        let displayCoins = Math.floor(coins);
+        if(maxCoins && displayCoins > maxCoins) displayCoins = maxCoins;
+        if(charId==='biden' && Math.random()<0.2) displayCoins = '??? (забыл)';
+        coinsSpan.innerText = displayCoins;
+        
+        if(charId==='gabenMother') {
+            fatLevelDisplay.classList.remove('hidden');
+            fatLevelDisplay.innerText = `🍔 УРОВЕНЬ ЖИРА: ${motherFatLevel} (${Math.min(90, 60+motherFatLevel*10)}% защиты)`;
+        } else { fatLevelDisplay.classList.add('hidden'); }
+        
+        if(charId==='kuplinov' && mayonnaiseTurnsLeft>0) {
+            mayonnaiseStatusDiv.classList.remove('hidden');
+            mayonnaiseStatusDiv.innerText = `🍯 МАЙОНЕЗ! Ещё ${mayonnaiseTurnsLeft} ходов`;
+        } else { mayonnaiseStatusDiv.classList.add('hidden'); }
+    }
+
+    function setEventMessage(text, isGameOver=false, isRare=false) {
+        eventDiv.innerHTML = text.replace(/\n/g,'<br>');
+        eventDiv.style.color = isGameOver ? '#ffaaaa' : (isRare ? '#ffaa44' : '#e2ffd6');
+    }
+
+    function addCoins(amount) {
+        let final = Math.floor(amount * (currentChar?.coinMultiplier||1));
+        let maxCoins = currentChar?.maxCoins;
+        if(maxCoins !== undefined && coins + final > maxCoins) final = maxCoins - coins;
+        if(final > 0) coins += final;
+        updateUI();
+        return final;
+    }
+
+    function getShopPrice(base) { return Math.floor(base * (1 - (currentChar?.shopDiscount||0))); }
+
+    function endGame() {
+        gameActive = false;
+        eatBtn.disabled = true;
+        setEventMessage(`💀 ИГРА ОКОНЧЕНА. ${currentChar?.name} умер. 💀`, true);
+    }
+
+    function restartGame() {
+        if(!currentChar) return;
+        lives = currentChar.startLives;
+        coins = currentChar.startCoins;
+        score = 0;
+        gameActive = true;
+        turnCounter = 0;
+        mayonnaiseTurnsLeft = 0;
+        motherFatLevel = 0;
+        muskAskShown = false;
+        eatBtn.disabled = false;
+        updateUI();
+        renderShop();
+        setEventMessage(`🔄 ИГРА ПЕРЕЗАПУЩЕНА! Ты снова ${currentChar.name}\n❤️ ${lives} жизней, 🪙 ${coins} монет`);
+    }
+
+    function applyDamage(dmg, reason) {
+        if(!gameActive) return 0;
+        let isProtected = false;
+        if(charId==='gabenMother') {
+            let protectChance = Math.min(0.9, 0.6 + motherFatLevel * 0.1);
+            if(Math.random() < protectChance) isProtected = true;
+        }
+        if(charId==='kuplinov' && mayonnaiseTurnsLeft>0) {
+            isProtected = true;
+            mayonnaiseTurnsLeft--;
+            setEventMessage(`🍯 МАЙОНЕЗ ЗАЩИТИЛ! Осталось ${mayonnaiseTurnsLeft} ходов`);
+            updateUI();
+            return 0;
+        }
+        if(isProtected) {
+            setEventMessage(`🛡️ ЗАЩИТА! ${reason} не нанёс урона`);
+            return 0;
+        }
+        let old = lives;
+        lives = Math.max(0, lives - dmg);
+        updateUI();
+        setEventMessage(`${reason}\n❤️ ${old} → ${lives}`);
+        if(lives<=0) endGame();
+        
+        if(charId==='kuplinov' && dmg>0 && lives>0 && mayonnaiseTurnsLeft===0) {
+            if(Math.random() < 0.02) {
+                mayonnaiseTurnsLeft = 10;
+                setEventMessage(`🍯 КУПЛИНОВ АКТИВИРОВАЛ МАЙОНЕЗ! 10 ходов неуязвимости!`, false, true);
+                updateUI();
+            }
+        }
+        return dmg;
+    }
+
+    function applyHeal(heal, reason) {
+        let old = lives;
+        let maxLives = currentChar?.maxLives;
+        if(maxLives && lives + heal > maxLives) heal = maxLives - lives;
+        lives += heal;
+        updateUI();
+        setEventMessage(`${reason}\n❤️ ${old} → ${lives}`);
+    }
+
+    // ГАБЕН: призыв матери
+    function summonMother() {
+        if(charId!=='gaben') return;
+        let cost = 2;
+        if(coins >= cost) {
+            coins -= cost;
+            score += 40;
+            updateUI();
+            setEventMessage(`👩‍👦 ГАБЕН ПРИЗВАЛ МАТЬ! +40 детей! Всего: ${score}`, false, true);
+        } else {
+            setEventMessage(`❌ Нужно ${cost}🪙! У тебя ${Math.floor(coins)}🪙`);
+        }
+    }
+
+    // БАНДЕРА: призыв Зеленского
+    function summonZelenskyForBandera() {
+        if(coins >= 200) {
+            coins -= 200;
+            coins += 200;
+            lives += 1;
+            updateUI();
+            setEventMessage(`🇺🇦 БАНДЕРА ПРИЗВАЛ ЗЕЛЕНСКОГО! +1 жизнь! ❤️ ${lives}`, false, true);
+        } else {
+            setEventMessage(`❌ Нужно 200🪙! У тебя ${Math.floor(coins)}🪙`);
+        }
+    }
+
+    // ИЛОН МАСК: попроситься на остров
+    function showMuskAskButton() {
+        if(muskAskShown) return;
+        muskAskShown = true;
+        const btn = document.createElement('button');
+        btn.innerText = '🚀 ПОПРОСИТЬСЯ НА ОСТРОВ (0.1% → +100❤️)';
+        btn.className = 'shop-btn';
+        btn.onclick = () => {
+            if(!gameActive) return;
+            if(Math.random() < 0.001) {
+                lives += 100;
+                updateUI();
+                setEventMessage(`🚀 ИЛОНА МАСКА ПРИНЯЛИ! +100 ЖИЗНЕЙ! ❤️ ${lives}`, false, true);
+            } else {
+                setEventMessage(`🚀 Илона НЕ приняли... (шанс 0.1%)`);
+            }
+            btn.remove();
+            muskAskShown = false;
+        };
+        specialContainer.appendChild(btn);
+    }
+
+    // КУПЛИНОВ: купить майонез
+    function buyMayonnaise() {
+        if(coins >= 50) {
+            coins -= 50;
+            mayonnaiseTurnsLeft = 10;
+            updateUI();
+            setEventMessage(`🍯 КУПЛЕН МАЙОНЕЗ! 10 ходов неуязвимости!`, false, true);
+        } else {
+            setEventMessage(`❌ Нужно 50🪙!`);
+        }
+    }
+
+    // МАТЬ ГАБЕНА: купить жир
+    function buyFat() {
+        if(coins >= 10) {
+            coins -= 10;
+            motherFatLevel++;
+            updateUI();
+            setEventMessage(`🍔 ЖИР +1! Теперь ${Math.min(90, 60+motherFatLevel*10)}% защиты`);
+        } else {
+            setEventMessage(`❌ Нужно 10🪙!`);
+        }
+    }
+
+    // МИНИ-ИГРА
+    function playMiniGame() {
+        let guess = parseInt(guessInput.value);
+        if(isNaN(guess) || guess<1 || guess>10) {
+            miniGameResult.innerText = "❌ Введи число от 1 до 10!";
+            return;
+        }
+        let target = Math.floor(Math.random() * 10) + 1;
+        if(guess === target) {
+            score += 10;
+            addCoins(5);
+            miniGameResult.innerText = `🎉 УГАДАЛ! +10 детей, +5🪙! 🎉`;
+            updateUI();
+        } else {
+            miniGameResult.innerText = `😭 НЕ УГАДАЛ! Было ${target}.`;
+        }
+        guessInput.value = '';
+    }
+
+    // БАЙДЕН: падение с лестницы
+    function applyBidenFalls() {
+        const r = Math.random();
+        if(r < 0.03) setEventMessage("👴 БАЙДЕН УПАЛ, но не пострадал");
+        else if(r < 0.10) applyDamage(1, "👴 БАЙДЕН УПАЛ! -1❤️");
+        else if(r < 0.11) applyDamage(2, "👴 БАЙДЕН ЖЕСТКО УПАЛ! -2❤️");
+    }
+
+    // ПРИГЛАШЕНИЕ НА ОСТРОВ
+    function triggerInvitation() {
+        if(charId==='epstein') applyHeal(3, "🏝️ ПРИГЛАШЕНИЕ! Эпштейн +3❤️");
+        else if(charId==='biden') applyDamage(1, "🏝️ Байдена НЕ пригласили -1❤️");
+        else if(charId==='trump') applyDamage(1, "🏝️ Трамп сосал пенис Эпштейну -1❤️");
+        else if(charId==='musk') { applyDamage(1, "🏝️ Илона не позвали -1❤️"); showMuskAskButton(); }
+        else if(charId==='bandera') applyDamage(1, "🏝️ Бандеру не позвали -1❤️");
+        else if(charId==='kuplinov') applyDamage(1, "🏝️ Куплинова не позвали -1❤️");
+        else if(charId==='gaben') applyDamage(1, "🏝️ Габена не позвали -1❤️");
+        else if(charId==='gabenMother') applyDamage(1, "🏝️ Мать Габена не позвали -1❤️");
+        else setEventMessage("🏝️ Никого не пригласили");
+    }
+
+    // ОСНОВНЫЕ ГОСТИ
+    function triggerRandomGuest() {
+        if(!gameActive) return;
+        turnCounter++;
+        
+        if(charId==='gabenMother' && turnCounter % 5 === 0) {
+            score += 3;
+            setEventMessage(`🐷 МАТЬ ГАБЕНА РАСШИРИЛАСЬ! +3 детей! Всего: ${score}`, false, true);
+            updateUI();
+            return;
+        }
+        
+        const inviteRand = Math.random();
+        if(inviteRand < 0.08) { triggerInvitation(); return; }
+        
+        const rand = Math.random()*100;
+        if(rand<30) { let g=addCoins(5); setEventMessage(`😶 Никого... +${g}🪙`); }
+        else if(rand<45) { let d=applyDamage(3, "🚨 ПОЛИЦИЯ! -3❤️"); if(d>0 && charId==='gaben') addCoins(1); }
+        else if(rand<55) { let d=applyDamage(1, "🔪 ТЕСАК! -1❤️"); if(d>0 && charId==='gaben') addCoins(1); }
+        else if(rand<65) { let d=applyDamage(1, "🩸 ЧИКАТИЛО! -1❤️"); if(d>0 && charId==='gaben') addCoins(1); }
+        else if(rand<77) { applyHeal(1, "🥒 ОГУЗОК! +1❤️"); addCoins(3); }
+        else if(rand<89) { applyHeal(3, "🕊️ НАВАЛЬНЫЙ! +3❤️"); addCoins(3); }
+        else if(rand<99) { let d=applyDamage(2, "🐻 ПУТИН! -2❤️"); if(d>0 && charId==='gaben') addCoins(1); }
+        else { let d=applyDamage(4, "🇺🇦 ЗЕЛЕНСКИЙ! -4❤️"); if(d>0 && charId==='gaben') addCoins(1); }
+        
+        if(charId==='biden' && Math.random()<0.1) applyBidenFalls();
+    }
+
+    function eatChild() {
+        if(!gameActive || lives<=0) return;
+        score++;
+        updateUI();
+        setEventMessage(`🍽️ Съеден ребёнок №${score}\n🌑 Ожидание...`);
+        setTimeout(()=>{
+            if(gameActive && lives>0) triggerRandomGuest();
+            if(lives<=0) endGame();
+            updateUI();
+             },200);
+    }
+
+    function renderShop() {
+        shopContainer.innerHTML = '';
+        specialContainer.innerHTML = '';
+        muskAskShown = false;
+        
+        if(charId==='gaben') {
+            const btn = document.createElement('button');
+            btn.innerText = `👩 ПРИЗВАТЬ МАТЬ (2🪙 → +40 детей)`;
+            btn.className = 'shop-btn';
+            btn.onclick = summonMother;
+            shopContainer.appendChild(btn);
+        }
+        else if(charId==='gabenMother') {
+            const btn = document.createElement('button');
+            btn.innerText = `🍔 КУПИТЬ ЖИР (10🪙 → +10% защиты)`;
+            btn.className = 'shop-btn';
+            btn.onclick = buyFat;
+            shopContainer.appendChild(btn);
+        }
+        else if(charId==='bandera') {
+            const btn = document.createElement('button');
+            btn.innerText = `🇺🇦 ПРИЗВАТЬ ЗЕЛЕНСКОГО (200🪙 → +1❤️)`;
+            btn.className = 'shop-btn';
+            btn.onclick = summonZelenskyForBandera;
+            shopContainer.appendChild(btn);
+        }
+        else if(charId==='kuplinov') {
+            const btn = document.createElement('button');
+            btn.innerText = `🍯 МАЙОНЕЗ (50🪙 → 10 ходов неуязвимости)`;
+            btn.className = 'shop-btn';
+            btn.onclick = buyMayonnaise;
+            shopContainer.appendChild(btn);
+        }
+        else if(charId==='musk') {
+            const price100 = getShopPrice(1000000);
+            const btn = document.createElement('button');
+            btn.innerText = `💀 100 ЖИЗНЕЙ за ${price100}🪙`;
+            btn.className = 'shop-btn';
+            btn.onclick = () => {
+                if(coins >= price100) {
+                    coins -= price100;
+                    lives += 100;
+                    updateUI();
+                    setEventMessage(`🚀 ИЛОН МАСК КУПИЛ 100 ЖИЗНЕЙ! ❤️ ${lives}`);
+                } else setEventMessage(`❌ Нужно ${price100}🪙`);
+            };
+            shopContainer.appendChild(btn);
+        }
+        else {
+            const price1 = getShopPrice(15);
+            const price3 = getShopPrice(40);
+            const btn1 = document.createElement('button'); btn1.innerText=`❤️ +1 жизнь (${price1}🪙)`; btn1.className='shop-btn';
+            btn1.onclick=()=>{ if(coins>=price1){ coins-=price1; lives+=1; updateUI(); setEventMessage(`🛒 +1 жизнь! ❤️ ${lives}`); } };
+            const btn3 = document.createElement('button'); btn3.innerText=`❤️❤️❤️ +3 жизни (${price3}🪙)`; btn3.className='shop-btn';
+            btn3.onclick=()=>{ if(coins>=price3){ coins-=price3; lives+=3; updateUI(); setEventMessage(`🛒 +3 жизни! ❤️ ${lives}`); } };
+            shopContainer.append(btn1,btn3);
+        }
+    }
+
+    function startGame(cha, id) {
+        currentChar = cha; charId = id;
+        lives = cha.startLives;
+        coins = cha.startCoins;
+        score = 0;
+        gameActive = true;
+        turnCounter = 0;
+        mayonnaiseTurnsLeft = 0;
+        motherFatLevel = 0;
+        muskAskShown = false;
+        eatBtn.disabled = false;
+        updateUI();
+        renderShop();
+        setEventMessage(`🍭 ИГРА НАЧАЛАСЬ! ${cha.name}\n❤️ ${lives} жизней, 🪙 ${coins} монет`);
+        charSelectDiv.classList.add('hidden');
+        gameDiv.classList.remove('hidden');
+    }
+
+    function resetToSelect() {
+        charSelectDiv.classList.remove('hidden');
+        gameDiv.classList.add('hidden');
+        currentChar = null;
+        gameActive = false;
+    }
+
+    // НАЗНАЧАЕМ ОБРАБОТЧИКИ ДЛЯ ВСЕХ КНОПОК
+    const charButtons = document.querySelectorAll('.char-btn');
+    console.log('Найдено кнопок:', charButtons.length);
+    
+    charButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const cid = btn.getAttribute('data-char');
+            console.log('Нажата кнопка:', cid);
+            
+            if(cid === 'gaben') startGame(characters.gaben, 'gaben');
+            else if(cid === 'gabenMother') startGame(characters.gabenMother, 'gabenMother');
+            else if(cid === 'biden') startGame(characters.biden, 'biden');
+            else if(cid === 'trump') startGame(characters.trump, 'trump');
+            else if(cid === 'epstein') startGame(characters.epstein, 'epstein');
+            else if(cid === 'musk') startGame(characters.musk, 'musk');
+            else if(cid === 'bandera') startGame(characters.bandera, 'bandera');
+            else if(cid === 'kuplinov') startGame(characters.kuplinov, 'kuplinov');
+            else console.log('Неизвестный персонаж:', cid);
+        });
+    });
+    
+    resetBtn.addEventListener('click', resetToSelect);
+    restartBtn.addEventListener('click', restartGame);
+    eatBtn.addEventListener('click', eatChild);
+    guessBtn.addEventListener('click', playMiniGame);
+</script>
+</body>
+</html>
