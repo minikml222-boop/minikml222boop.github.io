@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ЭПШТЕЙН v4.2 · LEGENDARY ROSTER</title>
+    <style>
+        * { user-select: none; -webkit-tap-highlight-color: transparent; box-sizing: border-box; transition: 0.4s; }
+        body { background: #03060c; min-height: 100vh; display: flex; justify-content: center; align-items: center; font-family: 'Courier New', monospace; margin: 0; padding: 10px; color: white; overflow: hidden; }
+        .game-container { background: #1a1f2a; border-radius: 30px; max-width: 420px; width: 100%; padding: 15px; border: 3px solid #7a6a3a; position: relative; box-shadow: 0 0 25px rgba(0,0,0,0.6); }
+        .night { filter: brightness(0.5) contrast(1.3) saturate(0.8); }
+        .player-stats { display: flex; justify-content: space-around; background: rgba(0,0,0,0.8); padding: 12px; border-radius: 15px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.1); }
+        .characters { display: flex; flex-direction: column; gap: 8px; max-height: 55vh; overflow-y: auto; padding: 5px; }
+        .char-btn { background: #2a3241; border: 2px solid #444; border-radius: 15px; padding: 12px; cursor: pointer; border-left: 8px solid; }
+        .char-btn.locked { opacity: 0.4; filter: grayscale(1); }
+        .event-log { background: rgba(0,0,0,0.9); border-radius: 15px; padding: 15px; min-height: 100px; margin: 10px 0; border: 1px solid #444; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .action-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+        .act-btn { border: none; font-size: 1rem; padding: 14px; border-radius: 40px; color: #fff; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .btn-normal { background: linear-gradient(#b34e2e, #5a1e0c); }
+        .btn-risk { background: linear-gradient(#4e2eb3, #1e0c5a); }
+        .btn-safe { background: #333; border: 1px solid #555; }
+        .btn-ult { background: linear-gradient(#f1c40f, #e67e22); color: #000; box-shadow: 0 0 15px #f1c40f; }
+        .btn-ult:disabled { opacity: 0.3; filter: grayscale(1); box-shadow: none; }
+        .progress-bar { width: 100%; height: 8px; background: #333; border-radius: 4px; overflow: hidden; margin-bottom: 5px; }
+        .progress-fill { height: 100%; background: #00ffcc; width: 0%; transition: 0.3s; }
+        .btn-ui { background: rgba(255,255,255,0.1); border: 1px solid #666; padding: 8px; border-radius: 10px; color: white; cursor: pointer; font-size: 0.7rem; margin: 2px; flex: 1; }
+        .hidden { display: none !important; }
+        #eventOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; border-radius: 27px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div id="mainBox" class="game-container">
+    <div class="player-stats">
+        <div>💎 <span id="playerGems">0</span></div>
+        <div id="locName" style="font-weight:bold; color:#00ffcc; cursor:pointer;" onclick="toggleDebug()">МЕНЮ</div>
+        <div>LVL: <span id="playerLvl">1</span></div>
+    </div>
+
+    <div id="characterSelect">
+        <div class="characters" id="charList"></div>
+    </div>
+
+    <div id="gameArea" class="hidden">
+        <div class="progress-bar"><div id="goalFill" class="progress-fill"></div></div>
+        <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px;">
+            <div id="livesDisplay" style="color:#f55"></div>
+            <div id="turnsDisplay">0/300</div>
+            <div id="coinsValue" style="color:#fd6">🪙 0</div>
+        </div>
+        <div class="event-log">
+            <div id="weatherLabel" style="font-size:0.7rem; color:#888; margin-bottom:5px;">ДЕНЬ</div>
+            <div id="eventMessage">В путь!</div>
+        </div>
+        <div class="action-grid">
+            <button id="ultBtn" class="act-btn btn-ult" onclick="useUltimate()" disabled>⚡ УЛЬТА (0%)</button>
+            <button class="act-btn btn-normal" onclick="playTurn('normal')">🍖 ОБЫЧНО</button>
+            <button class="act-btn btn-risk" onclick="playTurn('risk')">🎲 РИСК</button>
+            <button class="act-btn btn-safe" onclick="playTurn('safe')">🛡️ СЕЙФ (-15🪙)</button>
+        </div>
+        <div id="shopContainer" style="margin-top:10px; display:flex; flex-wrap:wrap;"></div>
+    </div>
+
+    <div id="eventOverlay" class="hidden">
+        <h2 id="evTitle"></h2>
+        <p id="evDesc"></p>
+        <div id="evButtons" style="display:flex; flex-direction:column; gap:10px; width:100%;"></div>
+    </div>
+</div>
+
+<div id="debugPanel" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; display:flex; align-items:center; justify-content:center;">
+    <div style="text-align:center;">
+        <h3>DEBUG PANEL</h3>
+        <input type="password" id="debugCode" placeholder="КОД" style="padding:10px; border-radius:10px; border:1px solid #00ffcc; background:#000; color:#00ffcc; text-align:center;"><br><br>
+        <button class="act-btn btn-normal" onclick="verifyCode()">VERIFY</button>
+        <button class="btn-ui" onclick="toggleDebug()">CLOSE</button>
+    </div>
+</div>
+
+<div id="endScreen" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); display:flex; align-items:center; justify-content:center; z-index:3000;">
+    <div style="background:#1a1f2a; padding:30px; border-radius:25px; border:3px solid #ffd966; text-align:center; width:80%;">
+        <h1 id="endTitle"></h1>
+        <p id="endStats" style="margin:20px 0;"></p>
+        <button class="act-btn btn-normal" style="width:100%" onclick="location.reload()">В МЕНЮ</button>
+    </div>
+</div>
+
+<script>
+    const zones = [
+        { n: "🔒 ТЮРЬМА", d: 2 }, { n: "🌲 ЛЕС", d: 3 }, { n: "🏙️ ГОРОД", d: 4 },
+        { n: "🌵 ПУСТЫНЯ", d: 6 }, { n: "🛥️ ЯХТА", d: 8 }, { n: "🧪 ЛАБОРАТОРИЯ", d: 10 },
+        { n: "🕳️ ПЕЩЕРЫ", d: 12 }, { n: "🌊 ОКЕАН", d: 15 }, { n: "🏮 НЕОН СИТИ", d: 20 },
+        { n: "🏝️ ОСТРОВ", d: 25 }
+    ];
+
+    const charData = {
+        epstein: { n: "Эпштейн", hp: 5, b: "Баланс", ult: "Радар (x2 🪙)", c: "#ffd966", cost: 0 },
+        skuf: { n: "Скуф", hp: 12, b: "Танк, -30% 🪙", ult: "Пиво (Щит)", c: "#795548", cost: 0 },
+        musk: { n: "Маск", hp: 5, b: "+150🪙 старт", ult: "Памп (x10 🪙)", c: "#00bcd4", cost: 0 },
+        kuplinov: { n: "Куплинов", hp: 6, b: "Стрим-аура", ult: "ОЙ МАМА! (Инвиз)", c: "#f44336", cost: 100 },
+        gaben_mom: { n: "Мать Габена", hp: 4, b: "Забота", ult: "Обед (Full HP)", c: "#e91e63", cost: 150 },
+        gaben: { n: "Габен", hp: 6, b: "Скидки 30%", ult: "Sale (Все по 1🪙)", c: "#3f51b5", cost: 70 },
+        papich: { n: "Папич", hp: 6, b: "Крит x5", ult: "Аскет (HP за 🪙)", c: "#ff9800", cost: 500 },
+        mellstroy: { n: "Мелстрой", hp: 5, b: "Казино", ult: "Джекпот (50/50)", c: "#9c27b0", cost: 500 }
+    };
+
+    let pState = { lvl: 1, xp: 0, gems: 0, unlocked: ['epstein', 'skuf', 'musk'] };
+    let cur = { active: false, id: '', hp: 0, coins: 0, turns: 0, armor: 0, ultCharge: 0, ultActive: 0, mult: 1 };
+
+    function save() { localStorage.setItem('ep_4.2', JSON.stringify(pState)); }
+    function load() {
+        const d = localStorage.getItem('ep_4.2');
+        if(d) pState = JSON.parse(d);
+        document.getElementById('playerGems').innerText = pState.gems;
+        document.getElementById('playerLvl').innerText = pState.lvl;
+        renderList();
+    }
+
+    function renderList() {
+        const list = document.getElementById('charList'); list.innerHTML = '';
+        for(let id in charData) {
+            const c = charData[id]; const locked = !pState.unlocked.includes(id);
+            const d = document.createElement('div'); d.className = `char-btn ${locked ? 'locked' : ''}`;
+            d.style.borderColor = c.c;
+            d.innerHTML = `<b>${c.n}</b><br><small>${c.b}</small><br><span style="font-size:0.6rem;color:#f1c40f">⚡ ${c.ult}</span> ${locked ? `[${c.cost}💎]` : ''}`;
+            d.onclick = () => locked ? unlock(id) : start(id);
+            list.appendChild(d);
+        }
+    }
+
+    function unlock(id) { if(pState.gems >= charData[id].cost) { pState.gems -= charData[id].cost; pState.unlocked.push(id); save(); load(); } }
+    function toggleDebug() { document.getElementById('debugPanel').classList.toggle('hidden'); }
+    function verifyCode() { if(document.getElementById('debugCode').value === '1337') { pState.gems += 500; cur.coins += 1000; save(); load(); gameUI(); toggleDebug(); } }
+
+    function start(id) {
+        cur = { active: true, id, hp: charData[id].hp, coins: (id === 'musk' ? 150 : 0), turns: 0, armor: 0, ultCharge: 0, ultActive: 0, mult: 1 };
+        document.getElementById('characterSelect').classList.add('hidden');
+        document.getElementById('gameArea').classList.remove('hidden');
+        gameUI();
+    }
+
+    function useUltimate() {
+        if(cur.ultCharge < 100) return;
+        cur.ultCharge = 0;
+        if(cur.id === 'skuf' || cur.id === 'kuplinov') { cur.ultActive = 5; log("✨ ЗАЩИТА АКТИВИРОВАНА!"); }
+        else if(cur.id === 'musk') { cur.ultActive = 3; cur.mult = 10; log("🚀 ПАМП x10!"); }
+        else if(cur.id === 'epstein') { cur.ultActive = 5; cur.mult = 2; log("📡 РАДАР x2!"); }
+        else if(cur.id === 'gaben_mom') { cur.hp = charData[cur.id].hp + 2; cur.armor = Math.min(5, cur.armor + 1); log("🍲 МАМА ПОКОРМИЛА!"); }
+        else if(cur.id === 'papich') { cur.hp += 5; cur.coins = 0; log("🧘 АСКЕТ!"); }
+        else if(cur.id === 'gaben') { cur.ultActive = 10; log("🎮 РАСПРОДАЖА!"); }
+        else if(cur.id === 'mellstroy') {
+            if(Math.random() > 0.5) { cur.coins += 500; log("🎰 ВИН!"); }
+            else { cur.hp = 1; log("💀 СЛИВ!"); }
+        }
+        gameUI();
+    }
+
+    function playTurn(mode) {
+        if(!cur.active) return;
+        if(mode === 'safe' && cur.coins < 15) return;
+        cur.turns++;
+        cur.ultCharge = Math.min(100, cur.ultCharge + 10);
+        if(cur.ultActive > 0) cur.ultActive--;
+        const isNight = (Math.floor(cur.turns / 20) % 2 === 1);
+        document.getElementById('mainBox').classList.toggle('night', isNight);
+        document.getElementById('weatherLabel').innerText = isNight ? "🌙 НОЧЬ (+💰 +💥)" : "☀️ ДЕНЬ";
+        if(Math.random() < 0.05) { triggerEvent(); return; }
+        processTurn(mode, isNight);
+    }
+
+    function processTurn(mode, isNight) {
+        const z = zones[Math.min(9, Math.floor(cur.turns / 30))];
+        document.getElementById('locName').innerText = z.n;
+        let m = (mode === 'risk' ? 3.0 : (mode === 'safe' ? 0 : 1.0)) * cur.mult;
+        if(cur.id === 'skuf') m *= 0.7;
+        if(isNight) m *= 1.5;
+        if(mode === 'safe') { cur.coins -= 15; log("🛡️ Спрятался"); }
+        else {
+            if(Math.random() < 0.45) {
+                let gain = Math.ceil((12 + cur.turns/8) * m);
+                cur.coins += gain; log(`💰 +${gain}🪙`);
+            } else if(Math.random() < 0.85) {
+                if(cur.ultActive > 0 && (cur.id === 'skuf' || cur.id === 'kuplinov')) { log("✨ УРОН ЗАБЛОКИРОВАН!"); }
+                else {
+                    let dmg = Math.max(1, (z.d + (isNight ? 5 : 0)) - cur.armor);
+                    cur.hp -= dmg; log(`💥 -${dmg}❤️`, "#f55");
+                }
+            } else { cur.hp++; log("🥒 +1❤️"); }
+        }
+        if(cur.turns >= 300) endGame("🏝️ ПОБЕДА!", 300);
+        if(cur.hp <= 0) endGame("💀 КОНЕЦ", 25);
+        gameUI();
+    }
+
+    function triggerEvent() {
+        const evs = [{t:"КЕЙС", d:"Открыть за 30🪙?", b:[{n:"Да", f:()=>{if(cur.coins>=30){cur.coins-=30; cur.coins+=80; log("💰 +80!");} closeEv();}}, {n:"Нет", f:closeEv}] }];
+        const ev = evs[0];
+        document.getElementById('evTitle').innerText = ev.t; document.getElementById('evDesc').innerText = ev.d;
+        const bb = document.getElementById('evButtons'); bb.innerHTML = '';
+        ev.b.forEach(o => { const b = document.createElement('button'); b.className="act-btn btn-normal"; b.innerText=o.n; b.onclick=o.f; bb.appendChild(b); });
+        document.getElementById('eventOverlay').classList.remove('hidden');
+    }
+    function closeEv() { document.getElementById('eventOverlay').classList.add('hidden'); gameUI(); }
+
+    function gameUI() {
+        document.getElementById('livesDisplay').innerText = "❤️".repeat(Math.max(0, cur.hp));
+        document.getElementById('coinsValue').innerText = "🪙 " + Math.floor(cur.coins);
+        document.getElementById('turnsDisplay').innerText = `${cur.turns}/300`;
+        document.getElementById('goalFill').style.width = (cur.turns / 3) + "%";
+        const ub = document.getElementById('ultBtn'); ub.innerText = `⚡ УЛЬТА (${cur.ultCharge}%)`; ub.disabled = cur.ultCharge < 100;
+        renderShop();
+    }
+
+    function renderShop() {
+        const s = document.getElementById('shopContainer'); s.innerHTML = '';
+        const isSale = (cur.id === 'gaben' && cur.ultActive > 0);
+        const prices = { h: isSale?1:40, a: isSale?1:(80+cur.armor*50) };
+        [{n:"❤️", p:prices.h, f:()=>cur.hp++}, {n:"🛡️", p:prices.a, f:()=>cur.armor++, d:cur.armor>=5}].forEach(it => {
+            const b = document.createElement('button'); b.className='btn-ui'; b.innerText=`${it.n}(${it.p}🪙)`;
+            if(it.d) b.disabled = true; b.onclick=()=>{if(cur.coins>=it.p){cur.coins-=it.p; it.f(); gameUI();}}; s.appendChild(b);
+        });
+    }
+
+    function endGame(t, g) {
+        cur.active = false; pState.gems += g; pState.xp = 0; save();
+        document.getElementById('endScreen').classList.remove('hidden');
+        document.getElementById('endTitle').innerText = t;
+        document.getElementById('endStats').innerText = `Ходов: ${cur.turns} | +${g}💎`;
+    }
+
+    function log(m, c="#fff") { document.getElementById('eventMessage').innerText = m; document.getElementById('eventMessage').style.color = c; }
+    load();
+</script>
+</body>
+</html>
